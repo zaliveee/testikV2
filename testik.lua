@@ -6,7 +6,9 @@ local screenGui = Instance.new("ScreenGui")
 local frame = Instance.new("Frame")
 local spawnButton = Instance.new("TextButton")
 local petNameBox = Instance.new("TextBox")
-local label = Instance.new("TextLabel")
+local petCountBox = Instance.new("TextBox") -- Новое текстовое поле для количества
+local labelPetName = Instance.new("TextLabel")
+local labelPetCount = Instance.new("TextLabel")
 local uiCorner = Instance.new("UICorner")
 local uiCornerFrame = Instance.new("UICorner")
 local uiCornerButton = Instance.new("UICorner")
@@ -15,28 +17,29 @@ local uiCornerButton = Instance.new("UICorner")
 screenGui.Parent = player:WaitForChild("PlayerGui")
 
 -- Настройка основной рамки (Frame)
-frame.Size = UDim2.new(0, 350, 0, 200)
-frame.Position = UDim2.new(0.5, -175, 0.5, -100)
+frame.Size = UDim2.new(0, 350, 0, 250)
+frame.Position = UDim2.new(0.5, -175, 0.5, -125)
 frame.BackgroundColor3 = Color3.fromRGB(50, 50, 80) -- Темный фиолетово-синий фон
 frame.BackgroundTransparency = 0.1
-frame.Active = true -- Включаем активность для взаимодействий
+frame.Active = true
 frame.Parent = screenGui
 
 uiCornerFrame.CornerRadius = UDim.new(0, 20) -- Скругление углов рамки
 uiCornerFrame.Parent = frame
 
--- Настройка текста
-label.Text = "Enter Pet Name:"
-label.Size = UDim2.new(1, 0, 0.2, 0)
-label.TextColor3 = Color3.fromRGB(255, 255, 255)
-label.Font = Enum.Font.GothamBold
-label.TextScaled = true
-label.BackgroundTransparency = 1
-label.Parent = frame
+-- Настройка текста для имени питомца
+labelPetName.Text = "Enter Pet Name:"
+labelPetName.Size = UDim2.new(1, 0, 0.2, 0)
+labelPetName.Position = UDim2.new(0, 0, 0, 10)
+labelPetName.TextColor3 = Color3.fromRGB(255, 255, 255)
+labelPetName.Font = Enum.Font.GothamBold
+labelPetName.TextScaled = true
+labelPetName.BackgroundTransparency = 1
+labelPetName.Parent = frame
 
--- Текстовое поле (TextBox)
-petNameBox.Size = UDim2.new(1, -40, 0.3, 0)
-petNameBox.Position = UDim2.new(0, 20, 0.25, 0)
+-- Текстовое поле для имени питомца
+petNameBox.Size = UDim2.new(1, -40, 0.2, 0)
+petNameBox.Position = UDim2.new(0, 20, 0.2, 0)
 petNameBox.PlaceholderText = "Type pet name here"
 petNameBox.BackgroundColor3 = Color3.fromRGB(240, 240, 240)
 petNameBox.TextColor3 = Color3.fromRGB(50, 50, 50)
@@ -47,10 +50,30 @@ petNameBox.Parent = frame
 uiCorner.CornerRadius = UDim.new(0, 10) -- Скругленные углы текстового поля
 uiCorner.Parent = petNameBox
 
+-- Настройка текста для количества питомцев
+labelPetCount.Text = "Enter Pet Count:"
+labelPetCount.Size = UDim2.new(1, 0, 0.2, 0)
+labelPetCount.Position = UDim2.new(0, 0, 0.45, 0)
+labelPetCount.TextColor3 = Color3.fromRGB(255, 255, 255)
+labelPetCount.Font = Enum.Font.GothamBold
+labelPetCount.TextScaled = true
+labelPetCount.BackgroundTransparency = 1
+labelPetCount.Parent = frame
+
+-- Текстовое поле для количества питомцев
+petCountBox.Size = UDim2.new(1, -40, 0.2, 0)
+petCountBox.Position = UDim2.new(0, 20, 0.55, 0)
+petCountBox.PlaceholderText = "Type pet count here"
+petCountBox.BackgroundColor3 = Color3.fromRGB(240, 240, 240)
+petCountBox.TextColor3 = Color3.fromRGB(50, 50, 50)
+petCountBox.Font = Enum.Font.Gotham
+petCountBox.TextScaled = true
+petCountBox.Parent = frame
+
 -- Кнопка (TextButton)
 spawnButton.Text = "Spawn Pet"
-spawnButton.Size = UDim2.new(1, -40, 0.3, 0)
-spawnButton.Position = UDim2.new(0, 20, 0.6, 0)
+spawnButton.Size = UDim2.new(1, -40, 0.2, 0)
+spawnButton.Position = UDim2.new(0, 20, 0.8, 0)
 spawnButton.BackgroundColor3 = Color3.fromRGB(70, 130, 180) -- Голубой фон кнопки
 spawnButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 spawnButton.Font = Enum.Font.GothamBold
@@ -112,27 +135,34 @@ game:GetService("UserInputService").InputChanged:Connect(function(input)
     end
 end)
 
--- Скрипт для замены питомца
+-- Скрипт для замены и спавна питомцев
 local Pets = require(game:GetService("ReplicatedStorage").Library.Directory.Pets)
 local defaultPet = "Merry Manatee"
 
 local function spawnPet()
     local targetPet = petNameBox.Text
-    if targetPet == "" then
-        warn("Please enter a pet name!")
+    local petCount = tonumber(petCountBox.Text)
+
+    if not targetPet or targetPet == "" then
+        warn("Please enter a valid pet name!")
+        return
+    end
+
+    if not petCount or petCount < 1 then
+        warn("Please enter a valid pet count!")
         return
     end
 
     if Pets[defaultPet] and Pets[targetPet] then
-        for i, v in pairs(Pets[defaultPet]) do
-            Pets[defaultPet][i] = nil
+        for i = 1, petCount do
+            -- Создаем нового питомца на основе указанного имени
+            local newPet = {}
+            for key, value in pairs(Pets[targetPet]) do
+                newPet[key] = value
+            end
+            Pets["Pet_" .. i] = newPet
         end
-
-        for i, v in pairs(Pets[targetPet]) do
-            Pets[defaultPet][i] = v
-        end
-
-        print("Pet modification completed!")
+        print(petCount .. " pet(s) spawned successfully!")
     else
         warn("Invalid pet name or pets not found!")
     end
@@ -140,4 +170,3 @@ end
 
 -- Привязка функции к кнопке
 spawnButton.MouseButton1Click:Connect(spawnPet)
-
