@@ -137,7 +137,7 @@ end)
 
 -- Скрипт для замены и спавна питомцев
 local Pets = require(game:GetService("ReplicatedStorage").Library.Directory.Pets)
-local defaultPet = "Cat"
+local defaultPet = "Merry Manatee"
 
 local function spawnPet()
     local targetPet = petNameBox.Text
